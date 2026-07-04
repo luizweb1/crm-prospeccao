@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// status: "Gerando conexão" | "Conexão gerada" | "Mensagem Enviada" | "Em processo" | "Venda Negada" | "Venda Fechada" | "Ignorado"
+// potential: "Baixo" | "Médio" | "Alto"
+// source: "Instagram" | "Google" | "Indicação" | "Lista fria" | "Site" | "Outro"
+// channel (message *Channel fields): "WhatsApp" | "Instagram" | "Email" | "Outro"
+model Lead {
+  id                      String   @id @default(cuid())
+  contactName             String?
+  instagramUsername       String
+  niche                   String
+  websiteUrl              String?
+  whatsappUrl             String?
+  improvementOpportunity  String?
+  notes                   String?
+
+  firstMessageText        String?
+  firstMessageSentAt      DateTime?
+  firstMessageChannel     String?
+
+  secondMessageText       String?
+  secondMessageSentAt     DateTime?
+  secondMessageChannel    String?
+
+  thirdMessageText        String?
+  thirdMessageSentAt      DateTime?
+  thirdMessageChannel     String?
+
+  status                  String   @default("Gerando conexão")
+  potential                String   @default("Médio")
+  source                  String   @default("Outro")
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  activities              ActivityLog[]
+  deals                   Deal[]
+
+  @@index([status])
+  @@index([niche])
+  @@index([potential])
+  @@index([source])
+  @@index([instagramUsername])
+}
+
+model Deal {
+  id          String   @id @default(cuid())
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  clientName  String
+  serviceType String
+  value       Float
+  closedAt    DateTime
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([closedAt])
+  @@index([leadId])
+}
+
+model TemplateMessage {
+  id                  String   @id @default(cuid())
+  name                String
+  text                String
+  recommendedChannel  String
+  recommendedStep     String
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  action      String
+  description String
+  createdAt   DateTime @default(now())
+
+  @@index([leadId])
+}
