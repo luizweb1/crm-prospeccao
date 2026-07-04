@@ -32,3 +32,13 @@ export function listMonthKeys(deals: Deal[]): string[] {
 export function totalValue(deals: Deal[]): number {
   return deals.reduce((sum, d) => sum + d.value, 0);
 }
+
+/** Soma só o valor dos clientes com pagamento já recebido (o que realmente entrou). */
+export function totalReceived(deals: Deal[]): number {
+  return totalValue(deals.filter((d) => d.paymentStatus === "Recebido"));
+}
+
+/** Soma o valor dos clientes fechados mas com pagamento ainda pendente. */
+export function totalPending(deals: Deal[]): number {
+  return totalValue(deals.filter((d) => d.paymentStatus === "A receber"));
+}

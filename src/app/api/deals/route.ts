@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { PAYMENT_STATUSES } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -32,12 +33,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Informe a data de fechamento." }, { status: 400 });
   }
 
+  const paymentStatus = PAYMENT_STATUSES.find((s) => s === body.paymentStatus) ?? "A receber";
+
   const deal = await prisma.deal.create({
     data: {
       leadId: body.leadId || null,
       clientName,
       serviceType,
       value,
+      paymentStatus,
       closedAt,
       notes: body.notes || null,
     },

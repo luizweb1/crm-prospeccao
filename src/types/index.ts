@@ -77,12 +77,16 @@ export interface TemplateMessage {
   updatedAt: string;
 }
 
+export const PAYMENT_STATUSES = ["Recebido", "A receber"] as const;
+export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
 export interface Deal {
   id: string;
   leadId: string | null;
   clientName: string;
   serviceType: string;
   value: number;
+  paymentStatus: PaymentStatus;
   closedAt: string;
   notes: string | null;
   createdAt: string;

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Deal, Lead } from "@/types";
+import type { Deal, Lead, PaymentStatus } from "@/types";
+import { PAYMENT_STATUSES } from "@/types";
 import { SERVICE_TYPE_SUGGESTIONS } from "@/lib/serviceTypes";
 
 export default function DealFormModal({
@@ -23,6 +24,7 @@ export default function DealFormModal({
   const [clientName, setClientName] = useState("");
   const [serviceType, setServiceType] = useState("");
   const [value, setValue] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("A receber");
   const [closedAt, setClosedAt] = useState("");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -35,6 +37,7 @@ export default function DealFormModal({
       setClientName(deal?.clientName ?? (initialLeadId ? leadDisplayName(leads, initialLeadId) : ""));
       setServiceType(deal?.serviceType ?? "");
       setValue(deal ? String(deal.value) : "");
+      setPaymentStatus(deal?.paymentStatus ?? "A receber");
       setClosedAt(deal?.closedAt ? deal.closedAt.slice(0, 10) : new Date().toISOString().slice(0, 10));
       setNotes(deal?.notes ?? "");
       setError(null);
@@ -69,6 +72,7 @@ export default function DealFormModal({
         clientName,
         serviceType,
         value: Number(value.replace(",", ".")),
+        paymentStatus,
         closedAt,
         notes,
       }),
@@ -139,6 +143,26 @@ export default function DealFormModal({
               placeholder="0,00"
               className="mt-1 field-input"
             />
+          </div>
+        </div>
+
+        <div>
+          <label className="field-label">Pagamento *</label>
+          <div className="mt-1 grid grid-cols-2 gap-2">
+            {PAYMENT_STATUSES.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setPaymentStatus(s)}
+                className={
+                  paymentStatus === s
+                    ? "rounded-lg border border-brand-500 bg-brand-500/15 px-3 py-2 text-sm font-semibold text-brand-300"
+                    : "rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-white/60 hover:bg-white/[0.08]"
+                }
+              >
+                {s}
+              </button>
+            ))}
           </div>
         </div>
 

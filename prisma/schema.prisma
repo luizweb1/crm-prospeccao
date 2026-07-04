@@ -51,20 +51,23 @@ model Lead {
   @@index([instagramUsername])
 }
 
+// paymentStatus: "Recebido" | "A receber"
 model Deal {
-  id          String   @id @default(cuid())
-  leadId      String?
-  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
-  clientName  String
-  serviceType String
-  value       Float
-  closedAt    DateTime
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  leadId        String?
+  lead          Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  clientName    String
+  serviceType   String
+  value         Float
+  paymentStatus String   @default("A receber")
+  closedAt      DateTime
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([closedAt])
   @@index([leadId])
+  @@index([paymentStatus])
 }
 
 // type: "Dívida" | "Gasto"

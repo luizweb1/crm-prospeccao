@@ -10,7 +10,7 @@ import FinanceTypeBadge from "@/components/FinanceTypeBadge";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import EmptyState from "@/components/EmptyState";
 import { formatCurrency } from "@/lib/currency";
-import { formatMonthLabel, getMonthKey, totalValue } from "@/lib/deals";
+import { formatMonthLabel, getMonthKey, totalPending, totalReceived } from "@/lib/deals";
 import { getDebtStatus, listDebtMonthKeys, paidAmountOf, remainingAmountOf, totalOutstanding } from "@/lib/debts";
 import clsx from "@/lib/clsx";
 
@@ -51,9 +51,12 @@ export default function FinanceiroPage() {
   }, [debts, typeFilter, monthFilter]);
 
   // Resumo geral: sempre visível, independente dos filtros da lista abaixo.
-  const totalRevenue = useMemo(() => totalValue(deals), [deals]);
+  // Só conta como "faturamento" o que já foi de fato recebido, pra não conflitar
+  // com clientes fechados que ainda estão com pagamento pendente.
+  const revenueReceived = useMemo(() => totalReceived(deals), [deals]);
+  const revenuePending = useMemo(() => totalPending(deals), [deals]);
   const totalOwed = useMemo(() => totalOutstanding(debts), [debts]);
-  const netBalance = totalRevenue - totalOwed;
+  const netBalance = revenueReceived - totalOwed;
 
   async function handleDelete() {
     if (!deletingDebt) return;
@@ -90,17 +93,21 @@ export default function FinanceiroPage() {
       </div>
 
       {/* Resumo geral — sempre visível, não depende dos filtros da lista */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Faturamento total (Clientes)</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-green-400">{formatCurrency(totalRevenue)}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Recebido (Clientes)</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-green-400">{formatCurrency(revenueReceived)}</p>
+        </div>
+        <div className="card p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">A receber (Clientes)</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-amber-400">{formatCurrency(revenuePending)}</p>
         </div>
         <div className="card p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Total em aberto (dívidas + gastos)</p>
           <p className="mt-2 text-3xl font-bold tracking-tight text-red-400">{formatCurrency(totalOwed)}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Saldo (faturamento − em aberto)</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Saldo (recebido − em aberto)</p>
           <p className={clsx("mt-2 text-3xl font-bold tracking-tight", netBalance >= 0 ? "text-green-400" : "text-red-400")}>
             {formatCurrency(netBalance)}
           </p>

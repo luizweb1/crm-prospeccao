@@ -7,8 +7,9 @@ import DealFormModal from "@/components/DealFormModal";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import EmptyState from "@/components/EmptyState";
 import InstagramLink from "@/components/InstagramLink";
+import PaymentStatusBadge from "@/components/PaymentStatusBadge";
 import { formatCurrency } from "@/lib/currency";
-import { formatMonthLabel, getMonthKey, listMonthKeys, totalValue } from "@/lib/deals";
+import { formatMonthLabel, getMonthKey, listMonthKeys, totalPending, totalReceived } from "@/lib/deals";
 
 type DealWithLead = Deal & { lead: { id: string; instagramUsername: string; contactName: string | null } | null };
 
@@ -61,7 +62,8 @@ function ClientesPageContent() {
     return deals.filter((d) => getMonthKey(d.closedAt) === monthFilter);
   }, [deals, monthFilter]);
 
-  const total = useMemo(() => totalValue(filtered), [filtered]);
+  const received = useMemo(() => totalReceived(filtered), [filtered]);
+  const pending = useMemo(() => totalPending(filtered), [filtered]);
 
   async function handleDelete() {
     if (!deletingDeal) return;
@@ -104,9 +106,13 @@ function ClientesPageContent() {
             </option>
           ))}
         </select>
-        <div className="ml-auto text-sm text-white/70">
-          Total {monthFilter === "all" ? "geral" : "do mês"}:{" "}
-          <span className="text-lg font-bold text-brand-400">{formatCurrency(total)}</span>
+        <div className="ml-auto flex flex-wrap gap-4 text-sm text-white/70">
+          <span>
+            Recebido: <span className="text-lg font-bold text-green-400">{formatCurrency(received)}</span>
+          </span>
+          <span>
+            A receber: <span className="text-lg font-bold text-amber-400">{formatCurrency(pending)}</span>
+          </span>
         </div>
       </div>
 
@@ -135,6 +141,7 @@ function ClientesPageContent() {
                   <th className="px-4 py-3">Cliente</th>
                   <th className="px-4 py-3">Serviço</th>
                   <th className="px-4 py-3">Valor</th>
+                  <th className="px-4 py-3">Pagamento</th>
                   <th className="px-4 py-3">Fechamento</th>
                   <th className="px-4 py-3">Lead de origem</th>
                   <th className="px-4 py-3"></th>
@@ -150,6 +157,9 @@ function ClientesPageContent() {
                     <td className="px-4 py-3.5 font-medium text-white/90">{deal.clientName}</td>
                     <td className="px-4 py-3.5 text-white/70">{deal.serviceType}</td>
                     <td className="px-4 py-3.5 font-semibold text-brand-400">{formatCurrency(deal.value)}</td>
+                    <td className="px-4 py-3.5">
+                      <PaymentStatusBadge status={deal.paymentStatus} />
+                    </td>
                     <td className="px-4 py-3.5 text-white/50 whitespace-nowrap">
                       {new Date(deal.closedAt).toLocaleDateString("pt-BR", { timeZone: "UTC" })}
                     </td>
@@ -181,6 +191,7 @@ function ClientesPageContent() {
                   <p className="font-bold text-brand-400">{formatCurrency(deal.value)}</p>
                 </div>
                 <p className="text-sm text-white/50">{deal.serviceType}</p>
+                <PaymentStatusBadge status={deal.paymentStatus} />
                 <div className="flex items-center justify-between text-xs text-white/40">
                   <span>{new Date(deal.closedAt).toLocaleDateString("pt-BR", { timeZone: "UTC" })}</span>
                   {deal.lead ? <InstagramLink username={deal.lead.instagramUsername} /> : <span>projeto avulso</span>}

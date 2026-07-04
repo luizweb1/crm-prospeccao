@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { PAYMENT_STATUSES } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Informe a data de fechamento." }, { status: 400 });
   }
 
+  const paymentStatus =
+    body.paymentStatus !== undefined ? (PAYMENT_STATUSES.find((s) => s === body.paymentStatus) ?? existing.paymentStatus) : existing.paymentStatus;
+
   const deal = await prisma.deal.update({
     where: { id: params.id },
     data: {
@@ -26,6 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       clientName: body.clientName !== undefined ? body.clientName.trim() : existing.clientName,
       serviceType: body.serviceType !== undefined ? body.serviceType.trim() : existing.serviceType,
       value,
+      paymentStatus,
       closedAt,
       notes: body.notes !== undefined ? body.notes || null : existing.notes,
     },
