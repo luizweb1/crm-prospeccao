@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { FINANCE_TYPES } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
+  const type = FINANCE_TYPES.find((t) => t === body.type) ?? "Gasto";
   const description = (body.description ?? "").trim();
   const category = (body.category ?? "").trim();
   const totalAmount = Number(body.totalAmount);
@@ -34,6 +36,7 @@ export async function POST(req: NextRequest) {
 
   const debt = await prisma.debt.create({
     data: {
+      type,
       description,
       category,
       totalAmount,

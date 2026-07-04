@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { FINANCE_TYPES } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +20,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Data de vencimento inválida." }, { status: 400 });
   }
 
+  const type = body.type !== undefined ? (FINANCE_TYPES.find((t) => t === body.type) ?? existing.type) : existing.type;
+
   const debt = await prisma.debt.update({
     where: { id: params.id },
     data: {
+      type,
       description: body.description !== undefined ? body.description.trim() : existing.description,
       category: body.category !== undefined ? body.category.trim() : existing.category,
       totalAmount,

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Debt } from "@/types";
+import type { Debt, FinanceType } from "@/types";
+import { FINANCE_TYPES } from "@/types";
 import { DEBT_CATEGORY_SUGGESTIONS } from "@/lib/debtCategories";
 
 export default function DebtFormModal({
@@ -15,6 +16,7 @@ export default function DebtFormModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const [type, setType] = useState<FinanceType>("Gasto");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [totalAmount, setTotalAmount] = useState("");
@@ -25,6 +27,7 @@ export default function DebtFormModal({
 
   useEffect(() => {
     if (open) {
+      setType(debt?.type ?? "Gasto");
       setDescription(debt?.description ?? "");
       setCategory(debt?.category ?? "");
       setTotalAmount(debt ? String(debt.totalAmount) : "");
@@ -51,6 +54,7 @@ export default function DebtFormModal({
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        type,
         description,
         category,
         totalAmount: Number(totalAmount.replace(",", ".")),
@@ -74,13 +78,33 @@ export default function DebtFormModal({
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm px-4">
       <div className="w-full max-w-lg rounded-2xl bg-white/[0.04] p-5 shadow-2xl space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-lg font-semibold text-white">{debt ? "Editar dívida" : "Nova dívida"}</p>
+          <p className="text-lg font-semibold text-white">{debt ? "Editar lançamento" : "Novo lançamento"}</p>
           <button onClick={onClose} className="text-white/40 hover:text-white/80 text-xl leading-none">
             ×
           </button>
         </div>
 
         {error && <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>}
+
+        <div>
+          <label className="field-label">Tipo *</label>
+          <div className="mt-1 grid grid-cols-2 gap-2">
+            {FINANCE_TYPES.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setType(t)}
+                className={
+                  type === t
+                    ? "rounded-lg border border-brand-500 bg-brand-500/15 px-3 py-2 text-sm font-semibold text-brand-300"
+                    : "rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-white/60 hover:bg-white/[0.08]"
+                }
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div>
           <label className="field-label">Descrição *</label>

@@ -97,8 +97,12 @@ export interface DebtPayment {
   createdAt: string;
 }
 
+export const FINANCE_TYPES = ["Dívida", "Gasto"] as const;
+export type FinanceType = (typeof FINANCE_TYPES)[number];
+
 export interface Debt {
   id: string;
+  type: FinanceType;
   description: string;
   category: string;
   totalAmount: number;

@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { href: "/leads", label: "Leads", icon: "📋" },
   { href: "/kanban", label: "Kanban", icon: "🗂️" },
   { href: "/clientes", label: "Clientes", icon: "💰" },
-  { href: "/dividas", label: "Dívidas", icon: "💳" },
+  { href: "/financeiro", label: "Financeiro", icon: "💳" },
   { href: "/templates", label: "Templates", icon: "✉️" },
 ];
 

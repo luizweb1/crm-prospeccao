@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { Debt, Deal } from "@/types";
+import type { Debt, Deal, FinanceType } from "@/types";
+import { FINANCE_TYPES } from "@/types";
 import DebtFormModal from "@/components/DebtFormModal";
 import RegisterPaymentModal from "@/components/RegisterPaymentModal";
 import DebtStatusBadge from "@/components/DebtStatusBadge";
+import FinanceTypeBadge from "@/components/FinanceTypeBadge";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import EmptyState from "@/components/EmptyState";
 import { formatCurrency } from "@/lib/currency";
@@ -12,10 +14,11 @@ import { formatMonthLabel, getMonthKey, totalValue } from "@/lib/deals";
 import { getDebtStatus, listDebtMonthKeys, paidAmountOf, remainingAmountOf, totalOutstanding } from "@/lib/debts";
 import clsx from "@/lib/clsx";
 
-export default function DividasPage() {
+export default function FinanceiroPage() {
   const [debts, setDebts] = useState<Debt[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [typeFilter, setTypeFilter] = useState<FinanceType | "all">("all");
   const [monthFilter, setMonthFilter] = useState<string>("all");
   const [formOpen, setFormOpen] = useState(false);
   const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
@@ -40,20 +43,17 @@ export default function DividasPage() {
   const monthKeys = useMemo(() => listDebtMonthKeys(debts), [debts]);
 
   const filtered = useMemo(() => {
-    if (monthFilter === "all") return debts;
-    return debts.filter((d) => d.dueDate && getMonthKey(d.dueDate) === monthFilter);
-  }, [debts, monthFilter]);
+    return debts.filter((d) => {
+      if (typeFilter !== "all" && d.type !== typeFilter) return false;
+      if (monthFilter !== "all" && (!d.dueDate || getMonthKey(d.dueDate) !== monthFilter)) return false;
+      return true;
+    });
+  }, [debts, typeFilter, monthFilter]);
 
-  const outstandingTotal = useMemo(() => totalOutstanding(debts), [debts]);
-
-  const monthBalance = useMemo(() => {
-    if (monthFilter === "all") return null;
-    const revenue = totalValue(deals.filter((d) => getMonthKey(d.closedAt) === monthFilter));
-    const debtDue = totalValue(
-      filtered.map((d) => ({ value: d.totalAmount }) as Deal),
-    );
-    return { revenue, debtDue, balance: revenue - debtDue };
-  }, [monthFilter, deals, filtered]);
+  // Resumo geral: sempre visível, independente dos filtros da lista abaixo.
+  const totalRevenue = useMemo(() => totalValue(deals), [deals]);
+  const totalOwed = useMemo(() => totalOutstanding(debts), [debts]);
+  const netBalance = totalRevenue - totalOwed;
 
   async function handleDelete() {
     if (!deletingDebt) return;
@@ -81,56 +81,64 @@ export default function DividasPage() {
     <div className="p-4 md:p-8 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Controle financeiro</h1>
-          <p className="text-sm text-white/50">Suas dívidas, vencimentos e pagamentos.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Financeiro</h1>
+          <p className="text-sm text-white/50">Suas dívidas e gastos, vencimentos e pagamentos.</p>
         </div>
         <button onClick={openCreate} className="btn-primary">
-          + Nova dívida
+          + Novo lançamento
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Resumo geral — sempre visível, não depende dos filtros da lista */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Total em aberto</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-red-400">{formatCurrency(outstandingTotal)}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Faturamento total (Clientes)</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-green-400">{formatCurrency(totalRevenue)}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Dívidas cadastradas</p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-white">{debts.length}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Total em aberto (dívidas + gastos)</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-red-400">{formatCurrency(totalOwed)}</p>
+        </div>
+        <div className="card p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Saldo (faturamento − em aberto)</p>
+          <p className={clsx("mt-2 text-3xl font-bold tracking-tight", netBalance >= 0 ? "text-green-400" : "text-red-400")}>
+            {formatCurrency(netBalance)}
+          </p>
         </div>
       </div>
 
       <div className="card p-4 flex flex-wrap items-center gap-3">
-        <label className="text-xs font-semibold text-white/50">Mês de vencimento:</label>
+        <label className="text-xs font-semibold text-white/50">Tipo:</label>
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as FinanceType | "all")} className="field-input w-auto">
+          <option value="all">Todos</option>
+          {FINANCE_TYPES.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+
+        <label className="text-xs font-semibold text-white/50">Vencimento:</label>
         <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="field-input w-auto">
-          <option value="all">Todas as dívidas</option>
+          <option value="all">Todos os meses</option>
           {monthKeys.map((key) => (
             <option key={key} value={key}>
               {formatMonthLabel(key)}
             </option>
           ))}
         </select>
-
-        {monthBalance && (
-          <div className="ml-auto text-xs text-white/50">
-            Saldo do mês (faturamento em Clientes menos dívidas com vencimento neste mês):{" "}
-            <span className={clsx("font-semibold", monthBalance.balance >= 0 ? "text-green-400" : "text-red-400")}>
-              {formatCurrency(monthBalance.balance)}
-            </span>
-          </div>
-        )}
       </div>
 
       {loading && <p className="text-sm text-white/50">Carregando...</p>}
 
       {!loading && filtered.length === 0 && (
         <EmptyState
-          title={debts.length === 0 ? "Nenhuma dívida cadastrada" : "Nenhuma dívida nesse mês"}
-          description="Cadastre suas dívidas aqui para acompanhar quanto deve e ir quitando aos poucos."
+          title={debts.length === 0 ? "Nenhum lançamento cadastrado" : "Nenhum lançamento com esse filtro"}
+          description="Cadastre suas dívidas e gastos aqui para acompanhar quanto deve e ir quitando aos poucos."
           action={
             debts.length === 0 && (
               <button onClick={openCreate} className="btn-primary">
-                + Cadastrar dívida
+                + Cadastrar lançamento
               </button>
             )
           }
@@ -150,6 +158,7 @@ export default function DividasPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
+                      <FinanceTypeBadge type={debt.type} />
                       <p className="font-semibold text-white/90">{debt.description}</p>
                       <DebtStatusBadge status={status} />
                     </div>
@@ -230,8 +239,8 @@ export default function DividasPage() {
 
       <ConfirmDialog
         open={!!deletingDebt}
-        title="Excluir dívida?"
-        description={deletingDebt ? `A dívida "${deletingDebt.description}" e seu histórico de pagamentos serão removidos permanentemente.` : undefined}
+        title="Excluir lançamento?"
+        description={deletingDebt ? `"${deletingDebt.description}" e seu histórico de pagamentos serão removidos permanentemente.` : undefined}
         confirmLabel="Excluir"
         danger
         onConfirm={handleDelete}

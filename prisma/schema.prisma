@@ -67,8 +67,10 @@ model Deal {
   @@index([leadId])
 }
 
+// type: "Dívida" | "Gasto"
 model Debt {
   id          String   @id @default(cuid())
+  type        String   @default("Gasto")
   description String
   category    String
   totalAmount Float
@@ -80,6 +82,7 @@ model Debt {
   payments    DebtPayment[]
 
   @@index([dueDate])
+  @@index([type])
 }
 
 model DebtPayment {
