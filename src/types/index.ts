@@ -89,6 +89,29 @@ export interface Deal {
   updatedAt: string;
 }
 
+export interface DebtPayment {
+  id: string;
+  debtId: string;
+  amount: number;
+  paidAt: string;
+  createdAt: string;
+}
+
+export interface Debt {
+  id: string;
+  description: string;
+  category: string;
+  totalAmount: number;
+  dueDate: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+  payments: DebtPayment[];
+}
+
+export const DEBT_STATUSES = ["Pendente", "Parcial", "Pago", "Atrasada"] as const;
+export type DebtStatus = (typeof DEBT_STATUSES)[number];
+
 export type NextAction =
   | "Continuar interação"
   | "Enviar 1º mensagem"
