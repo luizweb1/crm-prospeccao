@@ -13,19 +13,10 @@ export async function GET() {
 
     return NextResponse.json({ leads });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Erro desconhecido";
-
     console.error("Falha ao consultar leads:", error);
 
     return NextResponse.json(
-      {
-        error: "Falha ao consultar o banco",
-        details: message.replace(
-          /postgres(?:ql)?:\/\/[^\s"']+/gi,
-          "[database-url-hidden]",
-        ),
-      },
+      { error: "Falha ao consultar o banco" },
       { status: 500 },
     );
   }
