@@ -1,7 +1,18 @@
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
-import { normalizeWebsiteUrl, normalizeWhatsappUrl } from "../src/lib/normalize";
+import {
+  normalizeWebsiteUrl,
+  normalizeWhatsappUrl,
+} from "../src/lib/normalize";
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL não configurada.");
+}
+
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const existing = await prisma.lead.count();
