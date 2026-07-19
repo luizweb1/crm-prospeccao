@@ -1,5 +1,6 @@
 generator client {
-  provider   = "prisma-client-js"
+  provider   = "prisma-client"
+  output     = "../src/generated/prisma"
   engineType = "client"
 }
 
@@ -36,7 +37,7 @@ model Lead {
   thirdMessageChannel     String?
 
   status                  String   @default("Gerando conexão")
-  potential                String   @default("Médio")
+  potential               String   @default("Médio")
   source                  String   @default("Outro")
 
   createdAt               DateTime @default(now())
