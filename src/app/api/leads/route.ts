@@ -6,8 +6,29 @@ import { findDuplicateLeads } from "@/lib/duplicates";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const leads = await prisma.lead.findMany({ orderBy: { createdAt: "desc" } });
-  return NextResponse.json({ leads });
+  try {
+    const leads = await prisma.lead.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({ leads });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Erro desconhecido";
+
+    console.error("Falha ao consultar leads:", error);
+
+    return NextResponse.json(
+      {
+        error: "Falha ao consultar o banco",
+        details: message.replace(
+          /postgres(?:ql)?:\/\/[^\s"']+/gi,
+          "[database-url-hidden]",
+        ),
+      },
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(req: NextRequest) {
