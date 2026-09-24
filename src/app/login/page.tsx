@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -10,6 +11,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get("recuperacao") === "erro") {
+      setError("O link de recuperação é inválido ou expirou. Solicite um novo link.");
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -56,7 +65,12 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label className="field-label">Senha</label>
+          <div className="flex items-center justify-between gap-3">
+            <label className="field-label">Senha</label>
+            <Link href="/recuperar-senha" className="text-xs font-medium text-brand-400 hover:text-brand-300">
+              Esqueci minha senha
+            </Link>
+          </div>
           <input
             type="password"
             required

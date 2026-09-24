@@ -18,7 +18,9 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  if (pathname === "/login") return null;
+  const isAuthPage = ["/login", "/recuperar-senha", "/alterar-senha"].includes(pathname);
+
+  if (isAuthPage) return null;
 
   async function handleLogout() {
     const supabase = createClient();
@@ -59,6 +61,13 @@ export default function Sidebar() {
           })}
         </nav>
         <div className="px-3 py-4">
+          <Link
+            href="/alterar-senha"
+            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/50 hover:bg-white/[0.04] hover:text-white transition-colors"
+          >
+            <span className="text-base">🔐</span>
+            Alterar senha
+          </Link>
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-white/50 hover:bg-white/[0.04] hover:text-white transition-colors"
