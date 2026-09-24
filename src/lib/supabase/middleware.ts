@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 /**
  * Atualiza a sessão do Supabase a cada requisição e aplica a trava de acesso:
  * - Rotas de API sem sessão: 401 em JSON.
- * - Páginas sem sessão (exceto /login): redireciona para /login.
+ * - Páginas sem sessão (exceto as rotas públicas de autenticação): redireciona para /login.
  * - /login com sessão ativa: redireciona para o Dashboard.
  */
 export async function updateSession(request: NextRequest) {
@@ -34,12 +34,14 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApiRoute = pathname.startsWith("/api");
   const isLoginRoute = pathname === "/login";
+  const isPublicAuthRoute =
+    isLoginRoute || pathname === "/recuperar-senha" || pathname === "/auth/callback";
 
   if (!user && isApiRoute) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
 
-  if (!user && !isLoginRoute) {
+  if (!user && !isPublicAuthRoute) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     return NextResponse.redirect(loginUrl);

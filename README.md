@@ -33,6 +33,9 @@ O CRM organiza, lembra a próxima ação e facilita copiar/abrir links rapidamen
    `publishable key` (`NEXT_PUBLIC_SUPABASE_ANON_KEY`).
 4. Em **Authentication → Users → Add user**, crie o seu próprio usuário (email + senha) —
    é esse login que dá acesso ao CRM. Não existe tela de cadastro público de propósito.
+5. Em **Authentication → URL Configuration**, cadastre a URL de callback da aplicação,
+   por exemplo \`https://seu-dominio.com/auth/callback\`. Essa permissão é necessária para
+   que o link de recuperação de senha retorne ao CRM.
 
 ## Como rodar localmente
 
@@ -104,7 +107,8 @@ src/
 
 ## Funcionalidades principais
 
-- **Login único** (Supabase Auth) protegendo todas as páginas e rotas de API.
+- **Login único** (Supabase Auth) protegendo todas as páginas e rotas de API, com recuperação
+  de senha por email e troca de senha dentro do CRM.
 - **Cadastro de lead** com seções (dados do lead, análise comercial, mensagens, situação),
   incluindo o nome real da pessoa (usado para personalizar as mensagens geradas).
 - **Normalização automática do @ do Instagram**: aceita `@user`, `user`,
