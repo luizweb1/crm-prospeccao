@@ -31,14 +31,23 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Login sozinho não concede acesso aos dados do CRM. O banco também atende
+  // outros sistemas e usuários futuros do Supabase Auth.
+  const allowedUserId = process.env.CRM_ALLOWED_USER_ID;
+  const authorized = !!user && !!allowedUserId && user.id === allowedUserId;
+
   const { pathname } = request.nextUrl;
   const isApiRoute = pathname.startsWith("/api");
   const isLoginRoute = pathname === "/login";
   const isPublicAuthRoute =
     isLoginRoute || pathname === "/recuperar-senha" || pathname === "/auth/callback";
 
-  if (!user && isApiRoute) {
-    return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  if (isApiRoute && !authorized) {
+    return NextResponse.json({ error: user ? "Acesso não autorizado." : "Não autenticado." }, { status: user ? 403 : 401 });
+  }
+
+  if (user && !authorized && !isPublicAuthRoute) {
+    return new NextResponse("Acesso não autorizado.", { status: 403 });
   }
 
   if (!user && !isPublicAuthRoute) {
@@ -47,7 +56,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (user && isLoginRoute) {
+  if (authorized && isLoginRoute) {
     const homeUrl = request.nextUrl.clone();
     homeUrl.pathname = "/";
     return NextResponse.redirect(homeUrl);

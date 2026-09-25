@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -40,13 +41,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="-mt-14 flex min-h-screen items-center justify-center px-4 md:mt-0">
       <form onSubmit={handleSubmit} className="w-full max-w-sm card p-6 space-y-4">
         <div className="flex flex-col items-center gap-2 pb-2">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl brand-gradient text-white font-bold shadow-sm">
-            C
-          </div>
-          <p className="text-lg font-semibold text-white">CRM Prospecção</p>
+          <Image src="/brand/symbol.svg" alt="Símbolo LUIIZWEB" width={48} height={48} />
+          <p className="text-lg font-semibold text-white">LUIIZWEB CRM</p>
           <p className="text-sm text-white/50">Entre para continuar</p>
         </div>
 

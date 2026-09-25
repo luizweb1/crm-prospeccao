@@ -14,6 +14,10 @@ export interface DashboardMetrics {
   paradosMais2Dias: number;
   altoPotencial: number;
   cadastradosHoje: number;
+  contatados: number;
+  respostasEstimadas: number;
+  faturamentoFechado: number;
+  ticketMedio: number;
   porNicho: Record<string, number>;
   porOrigem: Record<string, number>;
 }
@@ -24,7 +28,7 @@ function isToday(date: string | Date): boolean {
   return d.toDateString() === now.toDateString();
 }
 
-export function calculateDashboardMetrics(leads: Lead[]): DashboardMetrics {
+export function calculateDashboardMetrics(leads: Lead[], deals: { value: number }[] = []): DashboardMetrics {
   const totalLeads = leads.length;
 
   let totalMessagesSent = 0;
@@ -49,7 +53,7 @@ export function calculateDashboardMetrics(leads: Lead[]): DashboardMetrics {
     if (lead.secondMessageSentAt) totalMessagesSent += 1;
     if (lead.thirdMessageSentAt) totalMessagesSent += 1;
 
-    if (lead.status === "Em processo" || lead.status === "Venda Fechada") {
+    if (lead.firstMessageSentAt && (lead.status === "Em processo" || lead.status === "Venda Fechada" || lead.status === "Venda Negada")) {
       respondentes += 1;
     }
 
@@ -67,11 +71,16 @@ export function calculateDashboardMetrics(leads: Lead[]): DashboardMetrics {
   }
 
   const leadsComPrimeiraMensagem = leads.filter((l) => l.firstMessageSentAt).length;
+  const faturamentoFechado = deals.reduce((total, deal) => total + deal.value, 0);
   const taxaResposta = leadsComPrimeiraMensagem > 0 ? (respondentes / leadsComPrimeiraMensagem) * 100 : 0;
   const taxaFechamento = totalLeads > 0 ? (vendaFechada / totalLeads) * 100 : 0;
 
   return {
     totalLeads,
+    contatados: leadsComPrimeiraMensagem,
+    respostasEstimadas: respondentes,
+    faturamentoFechado,
+    ticketMedio: deals.length ? faturamentoFechado / deals.length : 0,
     totalMessagesSent,
     emProcesso,
     vendaFechada,

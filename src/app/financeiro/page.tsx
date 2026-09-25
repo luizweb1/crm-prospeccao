@@ -12,7 +12,6 @@ import EmptyState from "@/components/EmptyState";
 import { formatCurrency } from "@/lib/currency";
 import { formatMonthLabel, getMonthKey, totalPending, totalReceived } from "@/lib/deals";
 import { getDebtStatus, listDebtMonthKeys, paidAmountOf, remainingAmountOf, totalOutstanding } from "@/lib/debts";
-import clsx from "@/lib/clsx";
 
 export default function FinanceiroPage() {
   const [debts, setDebts] = useState<Debt[]>([]);
@@ -51,12 +50,11 @@ export default function FinanceiroPage() {
   }, [debts, typeFilter, monthFilter]);
 
   // Resumo geral: sempre visível, independente dos filtros da lista abaixo.
-  // Só conta como "faturamento" o que já foi de fato recebido, pra não conflitar
-  // com clientes fechados que ainda estão com pagamento pendente.
+  // Recebimentos dos clientes ainda são declarados por status, sem data nem parcelas.
   const revenueReceived = useMemo(() => totalReceived(deals), [deals]);
   const revenuePending = useMemo(() => totalPending(deals), [deals]);
   const totalOwed = useMemo(() => totalOutstanding(debts), [debts]);
-  const netBalance = revenueReceived - totalOwed;
+  const paidOut = useMemo(() => debts.reduce((sum, debt) => sum + paidAmountOf(debt), 0), [debts]);
 
   async function handleDelete() {
     if (!deletingDebt) return;
@@ -107,10 +105,8 @@ export default function FinanceiroPage() {
           <p className="mt-2 text-3xl font-bold tracking-tight text-red-400">{formatCurrency(totalOwed)}</p>
         </div>
         <div className="card p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Saldo (recebido − em aberto)</p>
-          <p className={clsx("mt-2 text-3xl font-bold tracking-tight", netBalance >= 0 ? "text-green-400" : "text-red-400")}>
-            {formatCurrency(netBalance)}
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-white/40">Pagamentos de despesas registrados</p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-white">{formatCurrency(paidOut)}</p>
         </div>
       </div>
 

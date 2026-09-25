@@ -4,10 +4,11 @@ import { FINANCE_TYPES } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await req.json();
 
-  const existing = await prisma.debt.findUnique({ where: { id: params.id } });
+  const existing = await prisma.debt.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Dívida não encontrada." }, { status: 404 });
 
   const totalAmount = body.totalAmount !== undefined ? Number(body.totalAmount) : existing.totalAmount;
@@ -23,7 +24,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const type = body.type !== undefined ? (FINANCE_TYPES.find((t) => t === body.type) ?? existing.type) : existing.type;
 
   const debt = await prisma.debt.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       type,
       description: body.description !== undefined ? body.description.trim() : existing.description,
@@ -38,10 +39,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json({ debt });
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const existing = await prisma.debt.findUnique({ where: { id: params.id } });
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const existing = await prisma.debt.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Dívida não encontrada." }, { status: 404 });
 
-  await prisma.debt.delete({ where: { id: params.id } });
+  await prisma.debt.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

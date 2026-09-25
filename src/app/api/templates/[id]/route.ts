@@ -4,10 +4,11 @@ import { MESSAGE_CHANNELS, TEMPLATE_STEPS } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await req.json();
 
-  const existing = await prisma.templateMessage.findUnique({ where: { id: params.id } });
+  const existing = await prisma.templateMessage.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Template não encontrado." }, { status: 404 });
 
   if (body.recommendedChannel !== undefined && !MESSAGE_CHANNELS.includes(body.recommendedChannel)) {
@@ -18,7 +19,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   const template = await prisma.templateMessage.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       name: body.name ?? existing.name,
       text: body.text ?? existing.text,
@@ -31,10 +32,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json({ template });
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const existing = await prisma.templateMessage.findUnique({ where: { id: params.id } });
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const existing = await prisma.templateMessage.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Template não encontrado." }, { status: 404 });
 
-  await prisma.templateMessage.delete({ where: { id: params.id } });
+  await prisma.templateMessage.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }
