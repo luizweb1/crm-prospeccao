@@ -66,6 +66,9 @@ export default function LeadsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [deletingLead, setDeletingLead] = useState<Lead | null>(null);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
+  const [deleteAllError, setDeleteAllError] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
 
   async function loadLeads() {
@@ -91,6 +94,30 @@ export default function LeadsPage() {
     loadLeads();
   }
 
+  async function handleDeleteAll() {
+    if (deletingAll) return;
+
+    setDeletingAll(true);
+    setDeleteAllError(null);
+
+    const res = await fetch("/api/leads", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmation: "EXCLUIR_TODOS_OS_LEADS" }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setDeleteAllError(data.error || "Não foi possível limpar a base de leads.");
+      setDeletingAll(false);
+      return;
+    }
+
+    setLeads([]);
+    setDeleteAllOpen(false);
+    setDeletingAll(false);
+  }
+
   function openCreate() {
     setEditingLead(null);
     setFormOpen(true);
@@ -111,6 +138,17 @@ export default function LeadsPage() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {leads.length > 0 && (
+            <button
+              onClick={() => {
+                setDeleteAllError(null);
+                setDeleteAllOpen(true);
+              }}
+              className="btn-danger"
+            >
+              Limpar base
+            </button>
+          )}
           <button onClick={() => setImportOpen(true)} className="btn-secondary">
             Importar CSV
           </button>
@@ -314,6 +352,21 @@ export default function LeadsPage() {
         danger
         onConfirm={handleDelete}
         onCancel={() => setDeletingLead(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteAllOpen}
+        title={`Excluir todos os ${leads.length} leads?`}
+        description={
+          deleteAllError ||
+          "Esta ação remove permanentemente todos os leads e seus históricos. Clientes, vendas, financeiro, templates e configurações serão preservados."
+        }
+        confirmLabel={deletingAll ? "Excluindo..." : "Excluir todos"}
+        danger
+        onConfirm={handleDeleteAll}
+        onCancel={() => {
+          if (!deletingAll) setDeleteAllOpen(false);
+        }}
       />
     </div>
   );

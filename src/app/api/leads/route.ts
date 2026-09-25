@@ -79,3 +79,30 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ lead }, { status: 201 });
 }
+
+export async function DELETE(req: NextRequest) {
+  let body: { confirmation?: string };
+
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Confirmação inválida." }, { status: 400 });
+  }
+
+  if (body.confirmation !== "EXCLUIR_TODOS_OS_LEADS") {
+    return NextResponse.json({ error: "Confirmação inválida." }, { status: 400 });
+  }
+
+  try {
+    const deleted = await prisma.lead.deleteMany();
+
+    return NextResponse.json({ deleted: deleted.count });
+  } catch (error) {
+    console.error("Falha ao excluir todos os leads:", error);
+
+    return NextResponse.json(
+      { error: "Não foi possível limpar a base de leads." },
+      { status: 500 },
+    );
+  }
+}
