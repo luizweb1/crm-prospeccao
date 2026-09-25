@@ -14,6 +14,8 @@ export default function KanbanPage() {
   const [loading, setLoading] = useState(true);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<LeadStatus | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   async function loadLeads() {
     setLoading(true);
@@ -44,13 +46,23 @@ export default function KanbanPage() {
   }, [leads]);
 
   async function updateStatus(lead: Lead, status: LeadStatus) {
-    if (lead.status === status) return;
+    if (lead.status === status || savingId) return;
+    setSavingId(lead.id);
+    setSaveError(null);
     setLeads((prev) => prev.map((l) => (l.id === lead.id ? { ...l, status } : l)));
-    await fetch(`/api/leads/${lead.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status, force: true }),
-    });
+    try {
+      const res = await fetch(`/api/leads/${lead.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error("Não foi possível salvar a mudança. Tente novamente.");
+    } catch {
+      setLeads((prev) => prev.map((l) => (l.id === lead.id ? { ...l, status: lead.status } : l)));
+      setSaveError("Não foi possível salvar a mudança. O lead voltou à coluna anterior.");
+    } finally {
+      setSavingId(null);
+    }
   }
 
   if (loading) return <div className="p-8 text-sm text-white/50">Carregando kanban...</div>;
@@ -72,6 +84,8 @@ export default function KanbanPage() {
         <h1 className="text-2xl font-bold tracking-tight text-white">Kanban</h1>
         <p className="text-sm text-white/50">Arraste os cards ou use o seletor para mudar a situação</p>
       </div>
+      {saveError && <p role="alert" className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">{saveError}</p>}
+      {savingId && <p role="status" className="text-xs text-white/50">Salvando alteração...</p>}
 
       <div className="flex gap-4 overflow-x-auto pb-4">
         {LEAD_STATUSES.map((status) => (

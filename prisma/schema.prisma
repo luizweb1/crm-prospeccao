@@ -45,6 +45,7 @@ model Lead {
 
   activities              ActivityLog[]
   deals                   Deal[]
+  followUps               FollowUp[]
 
   @@index([status])
   @@index([niche])
@@ -121,4 +122,19 @@ model ActivityLog {
   createdAt   DateTime @default(now())
 
   @@index([leadId])
+}
+
+model FollowUp {
+  id          String    @id @default(cuid())
+  leadId      String
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  action      String
+  notes       String?
+  dueAt       DateTime
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([leadId, dueAt])
+  @@index([completedAt, dueAt])
 }

@@ -66,6 +66,18 @@ export interface ActivityLog {
   createdAt: string;
 }
 
+export interface FollowUp {
+  id: string;
+  leadId: string;
+  action: string;
+  notes: string | null;
+  dueAt: string;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lead?: Pick<Lead, "id" | "contactName" | "instagramUsername" | "potential" | "status">;
+}
+
 export interface TemplateMessage {
   id: string;
   name: string;

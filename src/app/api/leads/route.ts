@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeInstagramUsername, normalizeWebsiteUrl, normalizeWhatsappUrl } from "@/lib/normalize";
 import { findDuplicateLeads } from "@/lib/duplicates";
+import { validateLeadEnums } from "@/lib/leadValidation";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
+  const validationError = validateLeadEnums(body);
+  if (validationError) return NextResponse.json({ error: validationError }, { status: 400 });
   const force = body.force === true;
 
   const instagramUsername = normalizeInstagramUsername(body.instagramUsername ?? "");

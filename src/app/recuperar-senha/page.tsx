@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -32,12 +33,10 @@ export default function RecuperarSenhaPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="-mt-14 flex min-h-screen items-center justify-center px-4 md:mt-0">
       <div className="w-full max-w-sm card p-6">
         <div className="flex flex-col items-center gap-2 pb-6 text-center">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl brand-gradient text-white font-bold shadow-sm">
-            C
-          </div>
+          <Image src="/brand/symbol.svg" alt="Símbolo LUIIZWEB" width={48} height={48} />
           <p className="text-lg font-semibold text-white">Recuperar senha</p>
           <p className="text-sm text-white/50">
             {sent ? "Confira sua caixa de entrada" : "Enviaremos um link seguro para o seu email"}

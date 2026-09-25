@@ -10,6 +10,7 @@ import StatusBadge from "@/components/StatusBadge";
 import PotentialBadge from "@/components/PotentialBadge";
 import NextActionBadge from "@/components/NextActionBadge";
 import LeadFormModal from "@/components/LeadFormModal";
+import FollowUpPanel from "@/components/FollowUpPanel";
 import { calculateNextAction, daysSince, formatMessageDate } from "@/lib/nextAction";
 import { getInstagramUrl } from "@/lib/normalize";
 
@@ -189,6 +190,8 @@ export default function LeadDetailPage() {
           channel={lead.thirdMessageChannel}
         />
       </div>
+
+      <FollowUpPanel leadId={lead.id} />
 
       <div className="card p-5 space-y-3">
         <h3 className="text-xs font-bold uppercase tracking-wide text-white/40">Histórico de atividade</h3>

@@ -3,10 +3,11 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-export async function DELETE(_req: NextRequest, { params }: { params: { paymentId: string } }) {
-  const existing = await prisma.debtPayment.findUnique({ where: { id: params.paymentId } });
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ paymentId: string }> }) {
+  const { paymentId } = await params;
+  const existing = await prisma.debtPayment.findUnique({ where: { id: paymentId } });
   if (!existing) return NextResponse.json({ error: "Pagamento não encontrado." }, { status: 404 });
 
-  await prisma.debtPayment.delete({ where: { id: params.paymentId } });
+  await prisma.debtPayment.delete({ where: { id: paymentId } });
   return NextResponse.json({ ok: true });
 }

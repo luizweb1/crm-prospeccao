@@ -9,11 +9,21 @@ body {
 
 :root {
   color-scheme: dark;
+  --color-background: #0b0b0b;
+  --color-surface: #1a1a1a;
+  --color-surface-raised: #222222;
+  --color-border: #343434;
+  --color-brand: #ff2d2d;
+  --color-text: #ffffff;
+  --color-muted: #a3a3a3;
 }
 
 body {
-  @apply bg-black text-white font-sans antialiased;
+  @apply text-white font-sans antialiased;
+  background: var(--color-background);
 }
+
+*:focus-visible { outline: 2px solid #ff5d5d; outline-offset: 2px; }
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -25,12 +35,19 @@ body {
 
 @layer components {
   .brand-gradient {
-    background: linear-gradient(180deg, #ef1e0c 0%, #f74605 113.8%);
+    background: linear-gradient(180deg, #bd1515 0%, #e51e1e 100%);
   }
 
   .card {
-    @apply rounded-2xl border border-white/10 bg-white/[0.04] shadow-card;
+    @apply rounded-xl border border-white/10 shadow-card;
+    background: var(--color-surface);
   }
+
+  .nav-item {
+    @apply flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white;
+  }
+  .nav-item-active { @apply bg-brand-500/10 text-white; }
+  .nav-item-active svg { @apply text-brand-400; }
 
   .btn {
     @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-150 disabled:opacity-60 disabled:pointer-events-none;
@@ -56,6 +73,6 @@ body {
     @apply text-xs font-semibold text-white/50;
   }
   .field-input {
-    @apply w-full rounded-lg border border-white/15 bg-white/[0.05] px-3 py-2 text-sm text-white shadow-sm transition-colors placeholder:text-white/30 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20;
+    @apply w-full rounded-lg border border-white/15 bg-white/[0.04] px-3 py-2 text-sm text-white shadow-sm transition-colors placeholder:text-white/40 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20;
   }
 }

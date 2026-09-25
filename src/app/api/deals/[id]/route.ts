@@ -4,10 +4,11 @@ import { PAYMENT_STATUSES } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const body = await req.json();
 
-  const existing = await prisma.deal.findUnique({ where: { id: params.id } });
+  const existing = await prisma.deal.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Registro não encontrado." }, { status: 404 });
 
   const value = body.value !== undefined ? Number(body.value) : existing.value;
@@ -24,7 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     body.paymentStatus !== undefined ? (PAYMENT_STATUSES.find((s) => s === body.paymentStatus) ?? existing.paymentStatus) : existing.paymentStatus;
 
   const deal = await prisma.deal.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       leadId: body.leadId !== undefined ? body.leadId || null : existing.leadId,
       clientName: body.clientName !== undefined ? body.clientName.trim() : existing.clientName,
@@ -39,10 +40,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   return NextResponse.json({ deal });
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const existing = await prisma.deal.findUnique({ where: { id: params.id } });
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const existing = await prisma.deal.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Registro não encontrado." }, { status: 404 });
 
-  await prisma.deal.delete({ where: { id: params.id } });
+  await prisma.deal.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }
